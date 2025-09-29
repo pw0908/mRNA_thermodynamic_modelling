@@ -1,5 +1,9 @@
 # Thermodynamic modelling of mRNA solubility
-This repository contains the data, parameters and code related to the _Thermodynamic Modeling of mRNA with the Addition of Precipitants_ publication. The repository is divided into the following folders:
+This repository contains the data, parameters and code related to the _Thermodynamic Modeling of mRNA with the Addition of Precipitants_ publication. 
+
+![mRNA_solubility](/assets/solubility_fluc_water_salts.png)
+
+The repository is divided into the following folders:
 * `data`: Contains all experimental mRNA solubilities obtained within the work for both the FLUC and COVID sequences.
 * `parameters`: Contains all SAFT-$\gamma$ Mie parameters that were regressed within the work.
 * `examples`: Contains example code to obtain the solubility of an arbitrary mRNA sequence in a mixed solvent with added salt.
