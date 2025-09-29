@@ -1,7 +1,7 @@
 # Thermodynamic modelling of mRNA solubility
 This repository contains the data, parameters and code related to the _Thermodynamic Modeling of mRNA with the Addition of Precipitants_ publication. 
 
-![mRNA_solubility](/assets/solubility_fluc_water_salts.png)
+<img src="/assets/solubility_fluc_water_salts.png" alt="mRNA_solubility" width="400"/>
 
 The repository is divided into the following folders:
 * `data`: Contains all experimental mRNA solubilities obtained within the work for both the FLUC and COVID sequences.
