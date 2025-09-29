@@ -1,0 +1,20 @@
+Clapeyron Database File,
+SAFTgammaMie Groups [csvtype = groups,grouptype = SAFTgammaMie]
+species,groups
+pyridine,"[""aN"" => 1,""aCH"" => 5]"
+methylpyridine,"[""aN"" => 1,""aCH"" => 4,""aCCH3"" => 1]"
+pyrimidine,"[""aN"" => 2,""aCH"" => 4]"
+benzene,"[""aCH"" => 6]"
+toluene,"[""aCH"" => 5, ""aCCH3"" => 1]"
+xylene,"[""aCH"" => 4, ""aCCH3"" => 2]"
+aniline,"[""aCNH2"" => 1,""aCH"" => 5]"
+toluidine,"[""aCNH2"" => 1,""aCH"" => 4,""aCCH3"" => 1]"
+cyclohexanone,"[""cC=O"" => 1,""cCH2"" => 5]"
+cyclohexenone,"[""cC=O"" => 1,""cCH2"" => 3,""cCH="" => 2]"
+piperidine,"[""cCH2""=>5, ""cNH"" => 1]"
+cyclohexane,"[""cCH2""=>6]"
+pyrrole,"[""cNH_5"" => 1,""aCH_5"" => 4]"
+methylpyrrole,"[""cNH_5"" => 1,""aCH_5"" => 3,""aCCH3_5"" => 1]"
+dimethylpyrrole,"[""cNH_5"" => 1,""aCH_5"" => 2,""aCCH3_5"" => 2]"
+imidazole,"[""cNH_5"" => 1,""aCH_5"" => 3, ""aN_5"" => 1]"
+PEO6k,"[""cO"" => 135,""CH2OE"" => 270, ""CH2OH""=>2]"
