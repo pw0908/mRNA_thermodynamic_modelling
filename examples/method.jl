@@ -61,23 +61,22 @@ function build_mRNA_model(sequence, solvents=["water"], salts=["NaCl"])
                 "aCH"=>naCH,
                 "aN2"=>naN2,
                 "aCNH2"=>naCNH2,
-                "afC"=>nafC,
+                "afCp"=>nafC,
                 "aCH_5"=>naCH_5,
                 "aN_5"=>naN_5,
                 "cN"=>ncN,
                 "cCH"=>ncCH,
                 "cyO"=>ncyO,
-                "cCHOH"=>ncCHOH,
+                "cCHOHn"=>ncCHOH,
                 "CH2"=>nCH2,
                 "PO4-"=>nPO4,
                 "aN"=>naN,
                 "cNH"=>ncNH,
                 "cC=O"=>ncCO,
                 "aCCH"=>naC,
-                "CH3"=>nCH3
-    ])])
-    append!(_ions, [("hydronium",["H3O+"=>1])])
-    append!(names, ["mRNA", "hydronium"])
+                "CH3"=>nCH3])])
+    append!(_ions, [("potassium",["K+"=>1])])
+    append!(names, ["mRNA", "potassium"])
     for i in 1:length(salts)
         if salts[i] == "NaCl"
             append!(_ions, [("sodium",["Na+"=>1])])
@@ -105,13 +104,15 @@ function build_mRNA_model(sequence, solvents=["water"], salts=["NaCl"])
                                         RSPmodel_userlocations = ["../parameters/params_charges.csv"],)
 
     if "Na" == salts[1][1:end-2]
-        Gform = 17262.156855371857*nPO4
-        Hform = 36315.8618277432*nPO4
-        nx = Int(round(0.49952651515151514*nPO4))
+        Gform = 17.7124*1e3*nPO4
+        Hform = 33.8432*1e3*nPO4
+        nx = Int(round(0.50716*nPO4))
+        nw = Int(round(4.8986*nPO4))
     else
-        Gform = 18331.552741505777*nPO4
-        Hform = 26218.25553559551*nPO4
-        nx = Int(round(0.6254734848484849*nPO4))
+        Gform = 17.5102*1e3*nPO4
+        Hform = 23.3154*1e3*nPO4
+        nx = Int(round(0.7334*nPO4))
+        nw = Int(round(14.9451*nPO4))
     end
     solid = SolidKs(["water",salts[1][1:end-2]*".mRNA"]; userlocations = (;
                 # Gform = [0.0,
@@ -126,7 +127,7 @@ function build_mRNA_model(sequence, solvents=["water"], salts=["NaCl"])
                         298.15]))
 
     mapping = [(("water",1),)=>(("water",1)),
-            (("mRNA",1),("hydronium",nPO4-nx),(salts[1][1:end-2],nx))=>((salts[1][1:end-2]*".mRNA",1))]
+            (("water", nw),("mRNA",1),("potassium",nPO4-nx),(salts[1][1:end-2],nx))=>((salts[1][1:end-2]*".mRNA",1))]
     
 
     model = CompositeModel(names; mapping = mapping, fluid = fluid,
@@ -177,12 +178,12 @@ function sle_solubility_mrna(model::CompositeModel{F,S},p,T,z;solute=nothing,x0=
         ν_l = [solute_l[1][i][2] for i in 1:length(solute_l[1])]
         solute_l = [solute_l[1][i][1] for i in 1:length(solute_l[1])]
 
-        solute_l = ["mRNA","FLUC","COVID","poly(A)","poly(G)","poly(C)","poly(U)","hydronium"]
+        solute_l = ["mRNA","FLuc","COVID","seqA","seqB","seqC","poly(A)","poly(G)","poly(C)","poly(U)","potassium"]
         for i in solute_l
             idx_sol_l[model.fluid.components .== i] .= true
         end
 
-        solute_l_eq = ["mRNA","FLUC","COVID","poly(A)","poly(G)","poly(C)","poly(U)","hydronium","sodium","ammonium"]
+        solute_l_eq = ["mRNA","FLuc","COVID","seqA","seqB","seqC","poly(A)","poly(G)","poly(C)","poly(U)","potassium","sodium","ammonium","water"]
         idx_sol_l_eq = zeros(Bool,length(model.fluid.components))
         for i in solute_l_eq
             idx_sol_l_eq[model.fluid.components .== i] .= true
@@ -224,15 +225,13 @@ function obj_sle_solubility_mrna(F,model::CompositeModel{L,S},p,T,zsolv,solu,idx
     z = zeros(typeof(solu),length(model.fluid))
     z .= deepcopy(zsolv)
     z[.!(idx_solv)] .= solu.*[1,sum(ν_l[2:end])]
-    z[idx_solv] .= zsolv[idx_solv]
+        z[idx_sol_l] .+= solu*[1,sum(ν_l[2:end])]
+    # z[idx_solv] .= zsolv[idx_solv]
     z ./= sum(z)
     # println(Clapeyron.Solvers.primalval.(z))
      
 
     if typeof(model.fluid) <: ESElectrolyteModel
-        v = volume(model.fluid,p,T,z)
-        μ = Clapeyron.VT_chemical_potential_res(model.fluid,v,T,z) .- Rgas()*T*log(v*p/(Rgas()*T*sum(z))) + Rgas()  * T * log.(z)
-        
         zref = ones(length(model.fluid))*1e-30
         idx_water = find_water_indx(model.fluid)
         zref[idx_water] = 1.0
@@ -244,6 +243,10 @@ function obj_sle_solubility_mrna(F,model::CompositeModel{L,S},p,T,zsolv,solu,idx
         zref ./= sum(zref)
         vref = volume(model.fluid,p,T,zref)
         μref = Clapeyron.VT_chemical_potential_res(model.fluid,vref,T,zref) .- Rgas()*T*log(vref*p/(Rgas()*T*sum(zref)))
+
+
+        v = volume(model.fluid,p,T,z; vol0 = vref)
+        μ = Clapeyron.VT_chemical_potential_res(model.fluid,v,T,z) .- Rgas()*T*log(v*p/(Rgas()*T*sum(z))) + Rgas()  * T * log.(z)
 
         μliq = (μ - μref)[idx_sol_l_eq]
     else

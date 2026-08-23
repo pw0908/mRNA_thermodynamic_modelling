@@ -5,6 +5,7 @@ PO43-~|~phosphate,94.97,-3
 PO4-,94.97,-1
 Na+~|~sodium,22.989769,1
 K+~|~potassium,39.0983,1
+Li+~|~lithium,6.94,1
 H2O~|~water,18.01528,0
 Cl-~|~chloride,35.453,-1
 Br-~|~bromide,79.904,-1
@@ -12,7 +13,7 @@ NH4+~|~ammonium,18.038,1
 H3O+~|~hydronium,19.01528,1
 COO-~|~acetate,44.01,-1
 mRNA,330.2,-2277
-FLUC~|~poly(A)~|~poly(G)~|~poly(C)~|~poly(U),330.2,-2112
+FLuc~|~poly(A)~|~poly(G)~|~poly(C)~|~poly(U)~|~seqA~|~seqB~|~seqC,330.2,-2112
 COVID,330.2,-4278
 aCH,13.019,0
 aN2,14.007,0
