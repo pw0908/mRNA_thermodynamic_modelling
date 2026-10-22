@@ -18,5 +18,5 @@ z0 = n ./ sum(n)  # Mole fractions
 
 z = sle_solubility_mrna(model, p, T, z0; solute=["Na.mRNA"], x0=[-7.])  # Calculate molar solubility
 
-v = volume(model, p, T, z)  # Calculate molar volume
-cs = z[3]*Clapeyron.mw(model.fluid)[3]/v # Convert to concentration in μg/mL
+v = volume(model.fluid, p, T, z)  # Calculate molar volume
+cs = z[2]*Clapeyron.mw(model.fluid)[2]/v # Convert mRNA (component 2) to concentration in μg/mL

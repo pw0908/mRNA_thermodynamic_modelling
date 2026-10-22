@@ -1,7 +1,10 @@
 using NLSolvers, ForwardDiff, Clapeyron
 import Clapeyron: ESElectrolyteModel, find_water_indx, Solvers
 
-function build_mRNA_model(sequence, solvents=["water"], salts=["NaCl"])
+# `solid` optionally overrides the solid-phase parameters, given per nucleotide as
+# (ΔG [kJ/mol], ΔH [kJ/mol], m_c+ (added cations), m_H2O). If `nothing`, the fitted
+# values from the paper (Table SI.2) are used.
+function build_mRNA_model(sequence, solvents=["water"], salts=["NaCl"]; solid=nothing)
     if typeof(sequence) <: String
         nA = count(==('A'),sequence)
         nC = count(==('C'),sequence)
@@ -95,15 +98,20 @@ function build_mRNA_model(sequence, solvents=["water"], salts=["NaCl"])
         end
     end
 
-    fluid = SAFTgammaEMie(_solvents,_ions;neutralmodel_userlocations=["../parameters/params_like.csv",
-                                                        "../parameters/params_unlike.csv",
-                                                        "../parameters/params_assoc.csv"],
-                                        ionmodel_userlocations=["../parameters/params_charges.csv",
-                                                        "../parameters/params_like.csv"],
-                                        charges = ["../parameters/params_charges.csv"],
-                                        RSPmodel_userlocations = ["../parameters/params_charges.csv"],)
+    paramdir = joinpath(@__DIR__, "..", "parameters")
+    paramfiles = joinpath.(paramdir, ["params_like.csv","params_charges.csv","params_unlike.csv","params_assoc.csv"])
+    charge = vcat(zeros(Int,length(_solvents)), [-nPO4, 1, 1, -1])
+    fluid = SAFTgammaEMie(_solvents,_ions;neutralmodel_userlocations=paramfiles,
+                                        ionmodel_userlocations=paramfiles,
+                                        RSPmodel_userlocations = [joinpath(paramdir,"params_charges.csv")],
+                                        charge = charge,)
 
-    if "Na" == salts[1][1:end-2]
+    if !isnothing(solid)
+        Gform = solid[1]*1e3*nPO4
+        Hform = solid[2]*1e3*nPO4
+        nx = Int(round(solid[3]*nPO4))
+        nw = Int(round(solid[4]*nPO4))
+    elseif "Na" == salts[1][1:end-2]
         Gform = 17.7124*1e3*nPO4
         Hform = 33.8432*1e3*nPO4
         nx = Int(round(0.50716*nPO4))

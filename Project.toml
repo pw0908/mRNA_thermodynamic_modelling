@@ -1,3 +1,8 @@
 [deps]
+CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 Clapeyron = "7c7805af-46cc-48c9-995b-ed0ed2dc909a"
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
+Metaheuristics = "bcdb8e00-2c21-11e9-3065-2b553b22f898"
+NLSolvers = "337daf1e-9722-11e9-073e-8b9effe078ba"
 PyPlot = "d330b81b-6aea-500a-939a-2ce795aea3ee"
