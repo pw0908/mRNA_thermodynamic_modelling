@@ -143,11 +143,15 @@ function build_mRNA_model(sequence, solvents=["water"], salts=["NaCl"]; solid=no
 
     id = (model.fluid.neutralmodel.groups.flattenedgroups .!= _ions[3][2][end][1]) .&
          (model.fluid.neutralmodel.groups.flattenedgroups .!= _ions[4][2][end][1]) .&
+         (model.fluid.neutralmodel.groups.flattenedgroups .!= "K+") .&
          (model.fluid.neutralmodel.groups.flattenedgroups .!= "H2O") .&
          (model.fluid.neutralmodel.groups.flattenedgroups .!= "PO4-") .&
          (model.fluid.neutralmodel.groups.flattenedgroups .!= "CH2OH") .&
          (model.fluid.neutralmodel.groups.flattenedgroups .!= "CH2OE") .&
          (model.fluid.neutralmodel.groups.flattenedgroups .!= "cO")
+
+    model.fluid.neutralmodel.params.epsilon.values[end-2,id] .*= 0.
+    model.fluid.neutralmodel.params.epsilon.values[id,end-2] .*= 0.
 
     model.fluid.neutralmodel.params.epsilon.values[end-1,id] .*= 0.
     
@@ -213,12 +217,14 @@ function sle_solubility_mrna(model::CompositeModel{F,S},p,T,z;solute=nothing,x0=
         # idx_solv = model.components 
         # idx_solv =Bool.([1,0,0,1,1])
         # idx_sol_l =Bool.([0,1,1,0,0])
-
+        # println(idx_sol_l)
+        # println(idx_sol_l_eq)
         f!(F,x) = obj_sle_solubility_mrna(F,model,p,T,z,exp10(x[1]),idx_sol_l,idx_sol_s,idx_solv,idx_sol_l_eq,ν_l)
         results = Clapeyron.Solvers.nlsolve(f!,x0,LineSearch(Newton()),NEqOptions(f_abstol=1e-6,f_reltol=1e-8),ForwardDiff.Chunk{1}())
         # println(results)
+        # println(Solvers.x_sol(results)[1])
         sol[i,:] .=  z
-        sol[i,.!(idx_solv)] .= exp10(Solvers.x_sol(results)[1]).*[1,sum(ν_l[2:end])]
+        sol[i,idx_sol_l_eq] .+= exp10(Solvers.x_sol(results)[1]).*ν_l
         sol[i,:] ./= sum(sol[i,:])
     end
     if length(solute) == 1
@@ -232,8 +238,7 @@ function obj_sle_solubility_mrna(F,model::CompositeModel{L,S},p,T,zsolv,solu,idx
     # println(Clapeyron.Solvers.primalval(solu))
     z = zeros(typeof(solu),length(model.fluid))
     z .= deepcopy(zsolv)
-    z[.!(idx_solv)] .= solu.*[1,sum(ν_l[2:end])]
-        z[idx_sol_l] .+= solu*[1,sum(ν_l[2:end])]
+    z[idx_sol_l] .+= solu*[1,sum(ν_l[2:end])]
     # z[idx_solv] .= zsolv[idx_solv]
     z ./= sum(z)
     # println(Clapeyron.Solvers.primalval.(z))
@@ -252,9 +257,10 @@ function obj_sle_solubility_mrna(F,model::CompositeModel{L,S},p,T,zsolv,solu,idx
         vref = volume(model.fluid,p,T,zref)
         μref = Clapeyron.VT_chemical_potential_res(model.fluid,vref,T,zref) .- Rgas()*T*log(vref*p/(Rgas()*T*sum(zref)))
 
-
         v = volume(model.fluid,p,T,z; vol0 = vref)
         μ = Clapeyron.VT_chemical_potential_res(model.fluid,v,T,z) .- Rgas()*T*log(v*p/(Rgas()*T*sum(z))) + Rgas()  * T * log.(z)
+        
+        
 
         μliq = (μ - μref)[idx_sol_l_eq]
     else
